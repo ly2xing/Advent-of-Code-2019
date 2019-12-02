@@ -25,7 +25,7 @@ module.exports = {
     }
     let currentLine = 0;
     const getIndex = (lineNumber, instruction) => lineNumber * 4 + instruction;
-    const readLine = (lineNumber) =>  [0, 1, 2, 3].map(ins => code[getIndex(lineNumber, ins)]);
+    const readLine = (lineNumber) => [0, 1, 2, 3].map(ins => code[getIndex(lineNumber, ins)]);
     const processLine = (lineNumber) => {
       const line = readLine(lineNumber);
       const op1 = line[1];
@@ -45,14 +45,14 @@ module.exports = {
           return false;
       }
     };
-    while(processLine(currentLine)) {
+    while (processLine(currentLine)) {
       currentLine++;
     }
     return code[0];
   },
   day1_2: () => {
     const json = require('./input1_2.json');
-    const calculateFuel = fuel =>  Math.max(0, Math.floor(fuel / 3)-2);
+    const calculateFuel = fuel => Math.max(0, Math.floor(fuel / 3) - 2);
     const calculateFuels = (fuels) => {
       return fuels.flatMap(fuel => {
         const list = [];
@@ -68,8 +68,6 @@ module.exports = {
   },
   day1_1: () => {
     const json = require('./input1_1.json');
-    return json.reduce((sum, input) => {
-      return sum + (Math.floor(input / 3)-2);
-    }, 0);
+    return json.reduce((sum, input) => sum + (Math.floor(input / 3) - 2), 0);
   }
 };
