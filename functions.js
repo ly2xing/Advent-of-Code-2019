@@ -3,14 +3,11 @@ module.exports = {
     if (number === undefined) {
       number = 19690720;
     }
-    let noun = 0;
+    let noun = -1;
     let verb = 0;
-    let code = JSON.parse(JSON.stringify(require('./input2_2.json')));
-    code[1] = noun;
-    code[2] = verb;
-    let output = module.exports.day2_1(code);
+    let output = -1;
     while (output !== number) {
-      code = JSON.parse(JSON.stringify(require('./input2_2.json')));
+      const code = require('./input2_2.json').slice(0);
       noun++;
       if (noun > 99) {
         noun = 0;
