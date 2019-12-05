@@ -1,6 +1,6 @@
 const functions = require('./functions');
 const keys = Object.keys(functions).sort((a, b) => a < b ? -1 : (a > b ? 1 : 0));
-for (let key of keys) {
+for (let key of keys.filter(k => k.startsWith('day4'))) {
   console.info('========================');
   console.info(`Executing ${key}`);
   const func = functions[key];

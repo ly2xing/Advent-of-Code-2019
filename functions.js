@@ -1,9 +1,116 @@
 module.exports = {
+  day4_2: (json) => {
+    return module.exports.day4_1(json, true);
+  },
+  day4_1: (json, strict = false) => {
+    const { min, max } = json;
+    const check = (password) => {
+      const str = `${password}`;
+      const digits = str.split('');
+      let lastDigit = 0;
+      if (min <= +password && +password <= max && digits.length === 6) {
+        const map = {};
+        for (let digit of digits) {
+          if (+digit < lastDigit) {
+            return false;
+          }
+          map[+digit] = (map[+digit]||0) + 1;
+          lastDigit = +digit;
+        }
+        const counts = Object.values(map);
+        if (strict) {
+          return counts.some(c => c === 2);
+        } else {
+          return counts.some(c => c > 1);
+        }
+      }
+      return false;
+    };
+    const passwords = [];
+    for (let i = min; i <= max; i++) {
+      if (check(+i)) {
+        passwords.push(+i);
+      }
+    }
+    return passwords.length;
+  },
+  day3_2: (json) => {
+    const [line1Moves, line2Moves] = json;
+    const makeMove = (coordinates, move) => {
+      const operator = move.substring(0, 1);
+      const distance = move.substring(1);
+      let points = new Array(+distance).fill(1);
+      switch (operator) {
+        case 'U':
+          coordinates.y += +distance;
+          points = points.map((val, index) => {
+            const coordinate = {...coordinates};
+            coordinate.y -= (+distance - index - 1);
+            coordinate.length += index + 1;
+            return coordinate;
+          });
+          break;
+        case 'R':
+          coordinates.x += +distance;
+          points = points.map((val, index) => {
+            const coordinate = {...coordinates};
+            coordinate.x -= (+distance - index - 1);
+            coordinate.length += index + 1;
+            return coordinate;
+          });
+          break;
+        case 'D':
+          coordinates.y -= +distance;
+          points = points.map((val, index) => {
+            const coordinate = {...coordinates};
+            coordinate.y += +distance - index - 1;
+            coordinate.length += index + 1;
+            return coordinate;
+          });
+          break;
+        case 'L':
+          coordinates.x -= +distance;
+          points = points.map((val, index) => {
+            const coordinate = {...coordinates};
+            coordinate.x += +distance - index - 1;
+            coordinate.length += index + 1;
+            return coordinate;
+          });
+          break;
+        default:
+          console.error(`Unknown move, current coordinates:`, coordinates);
+      }
+      coordinates.length += +distance;
+      return points;
+    };
+    const generateLine = (moves) => {
+      const coordinates = {x: 0, y: 0, length: 0};
+      let line = [];
+      for (let move of moves) {
+        const points = makeMove(coordinates, move);
+        line = line.concat(points);
+      }
+      return line;
+    };
+    const comparator = (a, b) => (a.length < b.length) ? -1 : 1;
+    const line1 = generateLine(line1Moves).sort(comparator);
+    const line2 = generateLine(line2Moves).sort(comparator);
+    const line1Strings = line1.map(l => `X${l.x}Y${l.y}`);
+    const line2Strings = line2.map(l => `X${l.x}Y${l.y}`);
+    const intersections = line1Strings.filter(value => line2Strings.includes(value));
+    const yIndex = intersections[0].indexOf('Y');
+    const x = +intersections[0].substring(1, yIndex);
+    const y = +intersections[0].substring(yIndex + 1);
+    const point1 = line1.find(p => p.x === x && p.y === y);
+    const point2 = line2.find(p => p.x === x && p.y === y);
+    return point1.length + point2.length;
+  },
   day3_1: (json) => {
     const [line1Moves, line2Moves] = json;
     const makeMove = (coordinates, move) => {
       const operator = move.substring(0, 1);
       const distance = move.substring(1);
+      coordinates.length += distance;
       let points = new Array(+distance).fill(1);
       switch (operator) {
         case 'U':
@@ -44,7 +151,7 @@ module.exports = {
       return points;
     };
     const generateLine = (moves) => {
-      const coordinates = {x: 0, y: 0};
+      const coordinates = {x: 0, y: 0, length: 0};
       let line = [];
       for (let move of moves) {
         const points = makeMove(coordinates, move);
@@ -58,7 +165,6 @@ module.exports = {
     const line1Strings = line1.map(l => `X${l.x}Y${l.y}`);
     const line2Strings = line2.map(l => `X${l.x}Y${l.y}`);
     const intersections = line1Strings.filter(value => line2Strings.includes(value));
-    console.log(intersections);
     const yIndex = intersections[0].indexOf('Y');
     const x = +intersections[0].substring(1, yIndex);
     const y = +intersections[0].substring(yIndex + 1);
