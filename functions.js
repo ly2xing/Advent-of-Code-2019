@@ -1,4 +1,12 @@
+const computer = require('./computer');
+
 module.exports = {
+  day5_2: (json) => {
+    return computer.run(json, 5);
+  },
+  day5_1: (json) => {
+    return computer.run(json, 1);
+  },
   day4_2: (json) => {
     return module.exports.day4_1(json, true);
   },
