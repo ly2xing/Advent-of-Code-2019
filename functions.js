@@ -1,6 +1,47 @@
 const computer = require('./computer');
 
 module.exports = {
+  day6_2: (json) => {
+    const orbitMap = {};
+    for (let orbit of json) {
+      const [parent, child] = orbit.split(')');
+      orbitMap[child] = parent;
+    }
+    const findTree = (target) => {
+      const tree = [];
+      let parent = orbitMap[target];
+      while (parent) {
+        tree.push(parent);
+        parent = orbitMap[parent];
+      }
+      return tree;
+    };
+    const myTree = findTree('YOU');
+    const santaTree = findTree('SAN');
+    for (let i = 0; i < myTree.length; i++) {
+      const santaHops = santaTree.indexOf(myTree[i]);
+      if (santaHops > -1) {
+        return santaHops + i;
+      }
+    }
+  },
+  day6_1: (json) => {
+    const orbitMap = {};
+    for (let orbit of json) {
+      const [parent, child] = orbit.split(')');
+      orbitMap[child] = parent;
+    }
+    const children = Object.keys(orbitMap);
+    let totalOrbits = 0;
+    for (let child of children) {
+      let parent = orbitMap[child];
+      while (parent) {
+        totalOrbits++;
+        parent = orbitMap[parent];
+      }
+    }
+    return totalOrbits;
+  },
   day5_2: (json) => {
     return computer.run(json, 5);
   },
