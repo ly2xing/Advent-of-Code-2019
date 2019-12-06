@@ -235,38 +235,12 @@ module.exports = {
       }
       code[1] = noun;
       code[2] = verb;
-      output = module.exports.day2_1(code);
+      output = computer.run(code)[0];
     }
     return {noun, verb};
   },
   day2_1: (json) => {
-    const code = json;
-    let currentLine = 0;
-    const getIndex = (lineNumber, instruction) => lineNumber * 4 + instruction;
-    const readLine = (lineNumber) => [0, 1, 2, 3].map(ins => code[getIndex(lineNumber, ins)]);
-    const processLine = (lineNumber) => {
-      const line = readLine(lineNumber);
-      const op1 = line[1];
-      const op2 = line[2];
-      const op3 = line[3];
-      switch (line[0]) {
-        case 99:
-          return false;
-        case 1:
-          code[op3] = code[op1] + code[op2];
-          return true;
-        case 2:
-          code[op3] = code[op1] * code[op2];
-          return true;
-        default:
-          console.error("Unexpected Token:", line[0], "on line:", lineNumber, "index:", getIndex(lineNumber, 0));
-          return false;
-      }
-    };
-    while (processLine(currentLine)) {
-      currentLine++;
-    }
-    return code[0];
+    return computer.run(json)[0];
   },
   day1_2: (json) => {
     const calculateFuel = fuel => {

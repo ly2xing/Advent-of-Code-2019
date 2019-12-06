@@ -107,6 +107,9 @@ module.exports = {
         halt = true;
       }
     }
+    if (output.length === 0) {
+      output.push(code[0]);
+    }
     return output;
   }
 };
