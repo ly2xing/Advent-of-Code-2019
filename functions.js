@@ -52,7 +52,7 @@ module.exports = {
     return module.exports.day4_1(json, true);
   },
   day4_1: (json, strict = false) => {
-    const { min, max } = json;
+    const {min, max} = json;
     const check = (password) => {
       const str = `${password}`;
       const digits = str.split('');
@@ -63,7 +63,7 @@ module.exports = {
           if (+digit < lastDigit) {
             return false;
           }
-          map[+digit] = (map[+digit]||0) + 1;
+          map[+digit] = (map[+digit] || 0) + 1;
           lastDigit = +digit;
         }
         const counts = Object.values(map);
@@ -84,140 +84,85 @@ module.exports = {
     return passwords.length;
   },
   day3_2: (json) => {
-    const [line1Moves, line2Moves] = json;
-    const makeMove = (coordinates, move) => {
-      const operator = move.substring(0, 1);
-      const distance = move.substring(1);
-      let points = new Array(+distance).fill(1);
-      switch (operator) {
-        case 'U':
-          coordinates.y += +distance;
-          points = points.map((val, index) => {
-            const coordinate = {...coordinates};
-            coordinate.y -= (+distance - index - 1);
-            coordinate.length += index + 1;
-            return coordinate;
-          });
-          break;
-        case 'R':
-          coordinates.x += +distance;
-          points = points.map((val, index) => {
-            const coordinate = {...coordinates};
-            coordinate.x -= (+distance - index - 1);
-            coordinate.length += index + 1;
-            return coordinate;
-          });
-          break;
-        case 'D':
-          coordinates.y -= +distance;
-          points = points.map((val, index) => {
-            const coordinate = {...coordinates};
-            coordinate.y += +distance - index - 1;
-            coordinate.length += index + 1;
-            return coordinate;
-          });
-          break;
-        case 'L':
-          coordinates.x -= +distance;
-          points = points.map((val, index) => {
-            const coordinate = {...coordinates};
-            coordinate.x += +distance - index - 1;
-            coordinate.length += index + 1;
-            return coordinate;
-          });
-          break;
-        default:
-          console.error(`Unknown move, current coordinates:`, coordinates);
-      }
-      coordinates.length += +distance;
-      return points;
-    };
-    const generateLine = (moves) => {
-      const coordinates = {x: 0, y: 0, length: 0};
-      let line = [];
-      for (let move of moves) {
-        const points = makeMove(coordinates, move);
-        line = line.concat(points);
-      }
-      return line;
-    };
-    const comparator = (a, b) => (a.length < b.length) ? -1 : 1;
-    const line1 = generateLine(line1Moves).sort(comparator);
-    const line2 = generateLine(line2Moves).sort(comparator);
-    const line1Strings = line1.map(l => `X${l.x}Y${l.y}`);
-    const line2Strings = line2.map(l => `X${l.x}Y${l.y}`);
-    const intersections = line1Strings.filter(value => line2Strings.includes(value));
-    const yIndex = intersections[0].indexOf('Y');
-    const x = +intersections[0].substring(1, yIndex);
-    const y = +intersections[0].substring(yIndex + 1);
-    const point1 = line1.find(p => p.x === x && p.y === y);
-    const point2 = line2.find(p => p.x === x && p.y === y);
-    return point1.length + point2.length;
+    return module.exports.day3_1(json, true);
   },
-  day3_1: (json) => {
-    const [line1Moves, line2Moves] = json;
-    const makeMove = (coordinates, move) => {
-      const operator = move.substring(0, 1);
-      const distance = move.substring(1);
-      coordinates.length += distance;
-      let points = new Array(+distance).fill(1);
-      switch (operator) {
+  day3_1: (json, byDelay = false) => {
+    const [line1Segments, line2Segments] = json;
+    let line1Coordinates = {x: 0, y: 0};
+    let line2Coordinates = {x: 0, y: 0};
+    let line1SignalDelay = 0;
+    let line2SignalDelay = 0;
+    const parseMove = move => {
+      const direction = move.slice(0, 1);
+      switch (direction) {
         case 'U':
-          coordinates.y += +distance;
-          points = points.map((val, index) => {
-            const coordinate = {...coordinates};
-            coordinate.y -= (+distance - index - 1);
-            return coordinate;
-          });
-          break;
-        case 'R':
-          coordinates.x += +distance;
-          points = points.map((val, index) => {
-            const coordinate = {...coordinates};
-            coordinate.x -= (+distance - index - 1);
-            return coordinate;
-          });
-          break;
+          return {x: 0, y: +move.slice(1)};
         case 'D':
-          coordinates.y -= +distance;
-          points = points.map((val, index) => {
-            const coordinate = {...coordinates};
-            coordinate.y += +distance - index - 1;
-            return coordinate;
-          });
-          break;
+          return {x: 0, y: -+move.slice(1)};
         case 'L':
-          coordinates.x -= +distance;
-          points = points.map((val, index) => {
-            const coordinate = {...coordinates};
-            coordinate.x += +distance - index - 1;
-            return coordinate;
-          });
-          break;
-        default:
-          console.error(`Unknown move, current coordinates:`, coordinates);
+          return {x: -+move.slice(1), y: 0};
+        case 'R':
+          return {x: +move.slice(1), y: 0};
       }
-      return points;
     };
-    const generateLine = (moves) => {
-      const coordinates = {x: 0, y: 0, length: 0};
-      let line = [];
-      for (let move of moves) {
-        const points = makeMove(coordinates, move);
-        line = line.concat(points);
+    const combineVectors = (start, move) => {
+      start.x += move.x;
+      start.y += move.y;
+      return {...start};
+    };
+    const intersections = [];
+    const drawLine = (coordinates, move) => ({
+      start: {...coordinates},
+      end: combineVectors(coordinates, move)
+    });
+    const getOvershot = (end, intersect) => Math.abs(Math.abs(end.x) - Math.abs(intersect.x)) + Math.abs(Math.abs(end.y) - Math.abs(intersect.y));
+    for (let segment of line1Segments) {
+      const move1 = parseMove(segment);
+      const line1 = drawLine(line1Coordinates, move1);
+      line2Coordinates = {x: 0, y: 0};
+      line2SignalDelay = 0;
+      line1SignalDelay += Math.abs(move1.x) + Math.abs(move1.y);
+      for (let segment2 of line2Segments) {
+        const move2 = parseMove(segment2);
+        line2SignalDelay += Math.abs(move2.x) + Math.abs(move2.y);
+        const line2 = drawLine(line2Coordinates, move2);
+        const x1 = line1.start.x;
+        const x2 = line1.end.x;
+        const y1 = line1.start.y;
+        const y2 = line1.end.y;
+        const x3 = line2.start.x;
+        const x4 = line2.end.x;
+        const y3 = line2.start.y;
+        const y4 = line2.end.y;
+        if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
+          continue;
+        }
+        const denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
+        if (denominator === 0) {
+          continue;
+        }
+        const ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator;
+        const ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator;
+        if (ua < 0 || ua > 1 || ub < 0 || ub > 1) {
+          continue;
+        }
+        let x = x1 + ua * (x2 - x1);
+        let y = y1 + ua * (y2 - y1);
+
+        if (!(x === 0 && y === 0)) {
+          const intersect = {x,y};
+          intersect.delay = line1SignalDelay - getOvershot(line1.end, {x, y}) + line2SignalDelay - getOvershot(line2.end, {x, y})
+          intersections.push(intersect);
+        }
       }
-      return line;
-    };
-    const comparator = (a, b) => (Math.abs(a.x) + Math.abs(a.y)) < (Math.abs(b.x) + Math.abs(b.y)) ? -1 : 1;
-    const line1 = generateLine(line1Moves).sort(comparator);
-    const line2 = generateLine(line2Moves).sort(comparator);
-    const line1Strings = line1.map(l => `X${l.x}Y${l.y}`);
-    const line2Strings = line2.map(l => `X${l.x}Y${l.y}`);
-    const intersections = line1Strings.filter(value => line2Strings.includes(value));
-    const yIndex = intersections[0].indexOf('Y');
-    const x = +intersections[0].substring(1, yIndex);
-    const y = +intersections[0].substring(yIndex + 1);
-    return Math.abs(x) + Math.abs(y);
+    }
+    if (byDelay) {
+      intersections.sort((a, b) => (a.delay < b.delay) ? -1 : 1);
+      return intersections[0].delay;
+    } else {
+      intersections.sort((a, b) => (Math.abs(a.x) + Math.abs(a.y)) < (Math.abs(b.x) + Math.abs(b.y)) ? -1 : 1);
+      return Math.abs(intersections[0].x) + Math.abs(Math.abs(intersections[0].y));
+    }
   },
   day2_2: (json, number) => {
     if (number === undefined) {
